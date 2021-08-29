@@ -10,4 +10,6 @@
 
 **Thanks:** Offensive-Security and their [Exploit Development course Exp-301](https://www.offensive-security.com/exp301-osed/)
 
+**Next:** Creating a x64-bit version
+
 ## Example:
