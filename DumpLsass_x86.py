@@ -1,4 +1,4 @@
-# Author: Lasse Hauballe Jensen (PovlTekstTV)
+# Author: PovlTekstTV
 # Date: 08-29-2021
 # Architecture: x86 (32-bit)
 # Tested on Windows 10 (32-bit)
