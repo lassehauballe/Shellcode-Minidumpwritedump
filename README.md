@@ -13,3 +13,7 @@
 **Next:** Creating a x64-bit version
 
 ## Example:
+
+![Dumping lsass.exe](/img/first.PNG "Example")
+
+![Extracting using mimikatz](/img/second.PNG "Example")
