@@ -4,4 +4,4 @@ Purpose: To avoid putting mimikatz directly on the system. The shellcode can be 
 
 Limitations: The SeDebugPrivilege has to be enabled before using the shellcode. *(Hint: Powershell enables SeDebugPrivileged by default if the current user is allowed to use it i.e the local administrator).*  
 
-
+Where: A file named lsass.dmp is created in the *current directory* 
