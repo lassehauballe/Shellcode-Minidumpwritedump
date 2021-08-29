@@ -1,3 +1,9 @@
+# Author: Lasse Hauballe Jensen (PovlTekstTV)
+# Date: 08-29-2021
+# Architecture: x86 (32-bit)
+# Tested on Windows 10 (32-bit)
+# Null byte free
+
 import ctypes, struct
 from keystone import *
 
