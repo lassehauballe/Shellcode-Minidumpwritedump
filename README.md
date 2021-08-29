@@ -1,4 +1,4 @@
-# Shellcode for creating a minidump-file (.dmg) of lsass.exe
+# Shellcode for creating a minidump-file (.dmp) of lsass.exe
 
 **Purpose:** To avoid putting mimikatz directly on the system. The shellcode can be incorporated into different projects/exploits etc. 
 
