@@ -14,6 +14,6 @@
 
 ## Example:
 
-![Dumping lsass.exe](/img/first.PNG "Example")
+![Dumping lsass.exe](/img/First.PNG "Example")
 
-![Extracting using mimikatz](/img/second.PNG "Example")
+![Extracting using mimikatz](/img/Second.PNG "Example")
