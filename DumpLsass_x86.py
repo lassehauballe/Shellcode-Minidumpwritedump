@@ -3,6 +3,7 @@
 # Architecture: x86 (32-bit)
 # Tested on Windows 10 (32-bit)
 # Null byte free
+# Size: 423 bytes
 
 import ctypes, struct
 from keystone import *
