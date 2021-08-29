@@ -7,3 +7,5 @@
 **Where:** A file named lsass.dmp is created within the *current directory* where the shellcode is executed.
 
 **Fun-facts:** The Win32 API used: MiniDumpWriteDump is located within dbgcore.dll and not dbghelp.dll. For more information [MiniDumpWriteDump according to msdn](https://docs.microsoft.com/en-us/windows/win32/api/minidumpapiset/nf-minidumpapiset-minidumpwritedump)
+
+
