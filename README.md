@@ -13,7 +13,8 @@
 **Next:** Creating a x64-bit version
 
 ## Example:
-
+The script can be executed directly using Python. Otherwise, extract the opcodes and use them in another project. 
 ![Dumping lsass.exe](/img/First.PNG "Example")
 
+After the lsass.dmp is created, Mimikatz can be used to extract the hashes and/or passwords.
 ![Extracting using mimikatz](/img/Second.PNG "Example")
