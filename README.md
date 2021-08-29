@@ -1,6 +1,6 @@
 # Shellcode for creating a minidump-file (.dmp) of lsass.exe
 
-**Purpose:** To avoid putting mimikatz directly on the system. The shellcode can be incorporated into different projects/exploits etc. 
+**Purpose:** Created to avoid putting mimikatz directly on the targed system. The shellcode can be incorporated into different projects/exploits etc. 
 
 **Limitations:** The SeDebugPrivilege has to be enabled before using the shellcode. *(Hint: Powershell enables SeDebugPrivileged by default if the current user is allowed to use it i.e the local administrator).*  
 
