@@ -12,8 +12,6 @@
 
 **Thanks:** Offensive-Security and their [Exploit Development course Exp-301](https://www.offensive-security.com/exp301-osed/)
 
-**Next:** Creating a x64-bit version
-
 ## Example:
 The script can be executed directly using Python. Otherwise, extract the opcodes and use them in another project. 
 ![Dumping lsass.exe](/img/First.PNG "Example")
